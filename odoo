@@ -1,0 +1,30 @@
+server {
+    listen 80;
+    #server_name votre_domaine.com;  # Remplacez par votre nom de domaine ou adresse IP
+
+    # Logs
+    access_log /var/log/nginx/odoo.access.log;
+    error_log /var/log/nginx/odoo.error.log;
+
+    # Redirection vers Odoo
+    location / {
+        proxy_pass http://127.0.0.1:8069;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # Longpolling pour Odoo
+    location /longpolling {
+        proxy_pass http://127.0.0.1:8072;
+    }
+
+    # Cache pour les fichiers statiques
+    location ~* /web/static/ {
+        proxy_cache_valid 200 60m;
+        proxy_buffering on;
+        expires 864000;
+        proxy_pass http://127.0.0.1:8069;
+    }
+}
